@@ -1,5 +1,5 @@
 ﻿<!-- webform.html -->
-<form action="/submit" method="post">
+<form id="userForm" action="/submit" method="post">
     <label for="username">Username:</label>
     <input type="text" id="username" name="username">
 
@@ -8,3 +8,50 @@
 
     <button type="submit">Submit</button>
 </form>
+
+<script>/**
+     * Sanitizes user input by removing potentially harmful characters and scripts.
+     * @param {string} input - The user input to sanitize.
+     * @returns {string} - A sanitized version of the input.
+     */
+    function sanitizeInput(input) {
+        if (!input) return '';
+
+        // Remove SQL Injection patterns
+        let sanitized = input.replace(/('|\-\-|;|\/\*|\*\/|xp_)/gi, '');
+
+        // Remove HTML tags to prevent XSS
+        sanitized = sanitized.replace(/<.*?>/g, '');
+
+        // Encode remaining special characters to prevent XSS
+        sanitized = sanitized
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#x27;")
+            .replace(/\//g, "&#x2F;");
+
+        return sanitized;
+    }
+
+    // Attach form submit event listener
+    document.getElementById('userForm').addEventListener('submit', function(event) {
+        // Prevent default form submission to sanitize first
+        event.preventDefault();
+
+        // Get input fields
+        const usernameField = document.getElementById('username');
+        const emailField = document.getElementById('email');
+
+        // Sanitize inputs
+        const sanitizedUsername = sanitizeInput(usernameField.value);
+        const sanitizedEmail = sanitizeInput(emailField.value);
+
+        // Update fields with sanitized values
+        usernameField.value = sanitizedUsername;
+        emailField.value = sanitizedEmail;
+
+        // Now submit the form safely
+        this.submit();
+    });</script>
